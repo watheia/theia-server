@@ -1,0 +1,14 @@
+version: "2"
+
+volumes:
+  project:
+
+services:
+  theia-server:
+    image: registry.digitalocean.com/watheia/theia-server:latest
+    container_name: theia-server
+    volumes:
+      - project:/home/project
+    ports:
+      - 3000:3000
+    restart: unless-stopped
