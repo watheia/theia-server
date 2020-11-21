@@ -20,9 +20,9 @@ theia-server.local {
 				}
 				ldap_backend {
 					method ldap
-					realm contoso.com
+					realm theia-server.local
 					servers {
-						ldaps://ldaps.contoso.com ignore_cert_errors
+						ldaps://ldaps.theia-server.local ignore_cert_errors
 					}
 					attributes {
 						name givenName
