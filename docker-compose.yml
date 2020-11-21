@@ -1,14 +1,34 @@
 version: "2"
 
 volumes:
-  project:
+  theiaproject:
+  caddydata:
+  caddyconfig:
+
+networks:
+  local:
 
 services:
+  gatekeeper:
+    build: ./gatekeeper
+    container_name: gatekeeper
+    restart: unless-stopped
+    volumes:
+      - caddyconfig:/var/caddy/config
+      - caddydata:/var/caddy/data
+    networks:
+      - local
+    ports:
+      - 8080:8080
+      - 8443:8443
+
   theia-server:
     build: .
     container_name: theia-server
+    restart: unless-stopped
     volumes:
-      - project:/home/project
+      - theiaproject:/home/project
+    networks:
+      - local
     ports:
       - 3000:3000
-    restart: unless-stopped

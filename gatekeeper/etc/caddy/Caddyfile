@@ -1,0 +1,16 @@
+{
+	http_port 8080
+	https_port 8443
+	debug
+	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+theia-server.local {
+	root * /var/www/html
+	reverse_proxy localhost:3000
+	file_server
+
+	route /health {
+		respond * "OK" 200
+	}
+}
