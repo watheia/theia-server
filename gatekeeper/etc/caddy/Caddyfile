@@ -2,10 +2,12 @@
 	http_port 8080
 	https_port 8443
 	debug
-	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 	email admin@theia-server.local
+	# Comment out below for production
+	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
+# Update to match public domain (if desired)
 theia-server.local {
 	route /sso* {
 		auth_portal {
