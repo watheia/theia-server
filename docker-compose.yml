@@ -5,7 +5,7 @@ volumes:
 
 services:
   theia-server:
-    image: registry.digitalocean.com/watheia/theia-server:latest
+    build: .
     container_name: theia-server
     volumes:
       - project:/home/project
