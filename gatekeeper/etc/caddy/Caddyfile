@@ -1,6 +1,6 @@
 {
-	http_port 80
-	https_port 443
+	http_port 8080
+	https_port 8443
 	debug
 	acme_ca {$GK_ACME_CA}
 	email {$GK_ACME_EMAIL}
@@ -9,12 +9,12 @@
 # ***IMPORTANT***
 # If GK_SITE does not include all public access points, such
 # as bare IP adress, than your services will not be fully protected!
-# ***IMPORTANT***    
+# ***IMPORTANT***          
 {$GK_SITE} {
-	route /sso* {
+	route /auth* {
 		# trace
 		auth_portal {
-			path /sso
+			path /auth
 			backends {
 				local_backend {
 					method local
@@ -44,8 +44,8 @@
 				logo_description "Caddy"
 				links {
 					"Theia IDE" /ide/
-					"SSO Identity" /sso/whoami
-					"SSO Settings" /sso/settings
+					"SSO Identity" /auth/whoami
+					"SSO Settings" /auth/settings
 				}
 			}
 			registration {
@@ -62,11 +62,7 @@
 		respond * "OK" 200
 	}
 
-	route /greeting {
-		reverse_proxy localhost:32787
-	}
-
-	route {
+	route /ide* {
 		jwt {
 			primary yes
 			trusted_tokens {
@@ -76,7 +72,7 @@
 					token_issuer e1008f2d-ccfa-4e62-bbe6-c202ec2988cc
 				}
 			}
-			auth_url /sso
+			auth_url /auth
 			allow roles anonymous guest admin
 			allow roles superadmin
 			allow roles admin editor viewer
@@ -84,6 +80,11 @@
 			allow roles everyone Everyone
 		}
 
+		uri strip_prefix /ide
 		reverse_proxy localhost:3000
+	}
+
+	route {
+		redir https://{hostport}/auth 302
 	}
 }
