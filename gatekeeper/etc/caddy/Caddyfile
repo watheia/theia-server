@@ -1,12 +1,16 @@
 {
-	http_port 8080
-	https_port 8443
-	# debug
-	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
-	email admin@{$WA_DOMAIN}
+	http_port 80
+	https_port 443
+	debug
+	acme_ca {$GK_ACME_CA}
+	email {$GK_ACME_EMAIL}
 }
 
-{$WA_DOMAIN} {
+# ***IMPORTANT***
+# If GK_SITE does not include all public access points, such
+# as bare IP adress, than your services will not be fully protected!
+# ***IMPORTANT***    
+{$GK_SITE} {
 	route /sso* {
 		# trace
 		auth_portal {
@@ -21,8 +25,8 @@
 					method oauth2
 					realm google
 					provider google
-					client_id {$WA_GOOG_CLIENT_ID}
-					client_secret {$WA_GOOG_CLIENT_SECRET}
+					client_id {$GK_GOOG_CLIENT_ID}
+					client_secret {$GK_GOOG_CLIENT_SECRET}
 					scopes openid email profile
 				}
 			}
@@ -36,15 +40,8 @@
 			}
 			ui {
 				theme basic
-				generic_template "/etc/gatekeeper/templates/basic/generic.template"
-				login_template "/etc/gatekeeper/templates/basic/login.template"
-				portal_template "/etc/gatekeeper/templates/basic/portal.template"
-				register_template "/etc/gatekeeper/templates/basic/register.template"
-				settings_template "/etc/gatekeeper/templates/basic/settings.template"
-				whoami_template "/etc/gatekeeper/templates/basic/whoami.template"
-				custom_css_path "/etc/caddy/watheia-ui.css"
-				logo_url "https://cdn.watheia.dev/assets/img/logo_192.png"
-				logo_description "Watheia Labs"
+				logo_url "https://caddyserver.com/resources/images/caddy-circle-lock.svg"
+				logo_description "Caddy"
 				links {
 					"Theia IDE" /ide/
 					"SSO Identity" /sso/whoami
@@ -63,6 +60,10 @@
 	route /health {
 		trace tag="health"
 		respond * "OK" 200
+	}
+
+	route /greeting {
+		reverse_proxy localhost:32787
 	}
 
 	route {
