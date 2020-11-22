@@ -1,15 +1,14 @@
 {
 	http_port 8080
 	https_port 8443
-	debug
-	email admin@theia-server.local
-	# Comment out below for production
+	# debug
 	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+	email admin@{$WA_DOMAIN}
 }
 
-# Update to match public domain (if desired)
-theia-server.local {
+{$WA_DOMAIN} {
 	route /sso* {
+		# trace
 		auth_portal {
 			path /sso
 			backends {
@@ -18,85 +17,55 @@ theia-server.local {
 					path /etc/gatekeeper/auth/user_db.json
 					realm local
 				}
-				ldap_backend {
-					method ldap
-					realm theia-server.local
-					servers {
-						ldaps://ldaps.theia-server.local ignore_cert_errors
-					}
-					attributes {
-						name givenName
-						surname sn
-						username sAMAccountName
-						member_of memberOf
-						email mail
-					}
-					username "CN=authzsvc,OU=Service Accounts,OU=Administrative Accounts,DC=CONTOSO,DC=COM"
-					password "P@ssW0rd123"
-					search_base_dn "DC=CONTOSO,DC=COM"
-					search_filter "(&(|(sAMAccountName=%s)(mail=%s))(objectclass=user))"
-					groups {
-						"CN=Admins,OU=Security,OU=Groups,DC=CONTOSO,DC=COM" admin
-						"CN=Editors,OU=Security,OU=Groups,DC=CONTOSO,DC=COM" editor
-						"CN=Viewers,OU=Security,OU=Groups,DC=CONTOSO,DC=COM" viewer
-					}
-				}
-				azure_saml_backend {
-					method saml
-					realm azure
-					provider azure
-					idp_metadata_location /etc/gatekeeper/auth/azure_ad_app_metadata.xml
-					idp_sign_cert_location /etc/gatekeeper/auth/azure_ad_app_signing_cert.pem
-					tenant_id "1b9e886b-8ff2-4378-b6c8-6771259a5f51"
-					application_id "623cae7c-e6b2-43c5-853c-2059c9b2cb58"
-					application_name "My Gatekeeper"
-					entity_id "urn:caddy:mygatekeeper"
-					acs_url https://mygatekeeper/auth/saml/azure
-					acs_url https://mygatekeeper.local/auth/saml/azure
-					acs_url https://192.168.10.10:3443/auth/saml/azure
-					acs_url https://localhost:3443/auth/saml/azure
-					acs_url https://localhost:8443/auth/saml/azure
-				}
-				okta_oauth2_backend {
+				google_oauth2_backend {
 					method oauth2
-					realm okta
-					provider okta
-					domain_name dev-680653.okta.com
-					client_id 0oa121qw81PJW0Tj34x7
-					client_secret b3aJC5E59hU18YKC7Yca3994F4qFhWiAo_ZojanF
-					server_id default
-					scopes openid email profile groups
+					realm google
+					provider google
+					client_id {$WA_GOOG_CLIENT_ID}
+					client_secret {$WA_GOOG_CLIENT_SECRET}
+					scopes openid email profile
 				}
 			}
 			jwt {
 				token_name access_token
 				token_secret 0e2fdcf8-6868-41a7-884b-7308795fc286
 				token_issuer e1008f2d-ccfa-4e62-bbe6-c202ec2988cc
+				# token_rsa_file Hz789bc303f0db /etc/gatekeeper/auth/sign_key.pem
 				token_lifetime 3600
 				token_sign_method HS256
 			}
 			ui {
 				theme basic
-				# login_template "assets/templates/basic/login.template"
-				# portal_template "assets/templates/basic/portal.template"
+				generic_template "/etc/gatekeeper/templates/basic/generic.template"
+				login_template "/etc/gatekeeper/templates/basic/login.template"
+				portal_template "/etc/gatekeeper/templates/basic/portal.template"
+				register_template "/etc/gatekeeper/templates/basic/register.template"
+				settings_template "/etc/gatekeeper/templates/basic/settings.template"
+				whoami_template "/etc/gatekeeper/templates/basic/whoami.template"
 				custom_css_path "/etc/caddy/watheia-ui.css"
-				logo_url "https://caddyserver.com/resources/images/caddy-circle-lock.svg"
+				logo_url "https://cdn.watheia.dev/assets/img/logo_192.png"
 				logo_description "Watheia Labs"
 				links {
-					"IDE" /ide/
+					"Theia IDE" /ide/
 					"SSO Identity" /sso/whoami
 					"SSO Settings" /sso/settings
 				}
 			}
 			registration {
 				dropbox /etc/gatekeeper/auth/registrations_db.json
-				require domain_mx
+				title "User Registration"
+				code "WA-DEV"
+				require accept_terms
 			}
 		}
 	}
 
-	route /ide* {
-		trace
+	route /health {
+		trace tag="health"
+		respond * "OK" 200
+	}
+
+	route {
 		jwt {
 			primary yes
 			trusted_tokens {
@@ -113,77 +82,7 @@ theia-server.local {
 			allow roles AzureAD_Administrator AzureAD_Editor AzureAD_Viewer
 			allow roles everyone Everyone
 		}
-		uri strip_prefix /ide
+
 		reverse_proxy localhost:3000
-	}
-
-	route /sso/saml/azure* {
-		trace tag="saml_sso"
-		jwt {
-			auth_url /sso/saml/azure
-		}
-		respond * "azure saml sso" 200
-	}
-
-	route /sso/oauth2/okta* {
-		trace tag="okta_sso"
-		jwt {
-			auth_url /sso/oauth2/okta
-		}
-		respond * "okta oauth2 sso" 200
-	}
-
-	route /health {
-		trace tag="health"
-		respond * "OK" 200
-	}
-
-	route /greeting {
-		trace
-		reverse_proxy localhost:32787
-	}
-
-	route {
-		trace
-		# respond * "TEMPORARILY OUT OF SERVICE" 200
-		# reverse_proxy localhost:3000
-
-		redir https://{hostport}/sso 302
-	}
-}
-
-sso.watheia.dev {
-	route /health {
-		trace tag="health"
-		respond * "OK" 200
-	}
-
-	route {
-		trace
-		respond * "SSO" 200
-	}
-}
-
-netdata.watheia.dev {
-	route /health {
-		trace tag="health"
-		respond * "OK" 200
-	}
-
-	route {
-		# trace
-		reverse_proxy localhost:19999
-	}
-}
-
-mesh.watheia.dev {
-	route /health {
-		trace tag="health"
-		respond * "OK" 200
-	}
-
-	route {
-		trace
-		reverse_proxy localhost:8080
 	}
 }

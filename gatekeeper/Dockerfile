@@ -37,6 +37,7 @@ RUN xcaddy build \
 
 FROM alpine
 
+ADD etc /etc
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 RUN apk update; apk upgrade; apk add --no-cache ca-certificates mailcap curl;
@@ -45,11 +46,15 @@ RUN set -eux; \
     mkdir -p \
     /var/caddy/config \
     /var/caddy/data \
-    /var/www/html;
+    /var/www/html \
+    /etc/gatekeeper/auth;
 
 # set up nsswitch.conf for Go's "netgo" implementation
 # - https://github.com/docker-library/golang/blob/1eb096131592bcbc90aa3b97471811c798a93573/1.14/alpine3.12/Dockerfile#L9
 RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
+
+# Generate key for signing JWT tokens
+RUN openssl genrsa -out /etc/gatekeeper/auth/sign_key.pem 2048
 
 # See https://caddyserver.com/docs/conventions#file-locations for details
 ENV XDG_CONFIG_HOME /var/caddy/config
@@ -62,7 +67,7 @@ VOLUME /var/www/html
 EXPOSE 80
 EXPOSE 443
 
-ADD etc /etc
+
 
 CMD [ "caddy", "run", "--config", "/etc/caddy/Caddyfile" ]
 
