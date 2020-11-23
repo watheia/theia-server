@@ -4,4 +4,7 @@ plugins {
 
 docker {
    name ="${containerRegistry}/theia-server:${project.name}"
+    copySpec.from(projectDir) {
+        include 'etc/**'
+    }
 }

@@ -10,6 +10,7 @@ lib
 .settings/
 .project
 .classpath
+.env
 
 # Ignore Gradle build output directory
 build/

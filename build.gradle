@@ -1,6 +1,7 @@
 plugins {
     id 'dev.watheia.node-conventions'
     id 'dev.watheia.docker-conventions'
+    id 'dev.watheia.docker-compose-conventions'
 }
 
 docker {
@@ -17,4 +18,9 @@ docker {
     }
 }
 
-tasks.docker.dependsOn ':theia-server:docker-backend:assemble'
+assemble {
+    dependsOn ':theia-server:docker-backend:assemble',
+            ':theia-server:gatekeeper:assemble'
+}
+
+tasks.docker.mustRunAfter ':theia-server:docker-backend:assemble'
