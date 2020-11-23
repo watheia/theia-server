@@ -1,7 +1,7 @@
 version: "2"
 
 volumes:
-  theiaproject:
+  project:
   caddydata:
   caddyconfig:
 
@@ -10,24 +10,30 @@ networks:
 
 services:
   gatekeeper:
-    build: ./gatekeeper
+    image: registry.digitalocean.com/watheia/theia-server:gatekeeper
     container_name: gatekeeper
     restart: unless-stopped
+    environment:
+      GK_ACME_CA: "${GK_ACME_CA}"
+      GK_ACME_EMAIL: "${GK_ACME_EMAIL}"
+      GK_SITE: "${GK_SITE}"
+      GK_GOOG_CLIENT_ID: "${GK_GOOG_CLIENT_ID}"
+      GK_GOOG_CLIENT_SECRET: "${GK_GOOG_CLIENT_SECRET}"
     volumes:
       - caddyconfig:/var/caddy/config
       - caddydata:/var/caddy/data
     networks:
       - local
     ports:
-      - 8080:8080
-      - 8443:8443
+      - 8080:80
+      - 8443:443
 
   theia-server:
     build: .
     container_name: theia-server
     restart: unless-stopped
     volumes:
-      - theiaproject:/home/project
+      - project:/home/project
     networks:
       - local
     ports:

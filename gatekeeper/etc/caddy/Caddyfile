@@ -1,6 +1,6 @@
 {
-	http_port 8080
-	https_port 8443
+	http_port 80
+	https_port 443
 	debug
 	acme_ca {$GK_ACME_CA}
 	email {$GK_ACME_EMAIL}
@@ -9,7 +9,7 @@
 # ***IMPORTANT***
 # If GK_SITE does not include all public access points, such
 # as bare IP adress, than your services will not be fully protected!
-# ***IMPORTANT***          
+# ***IMPORTANT***           
 {$GK_SITE} {
 	route /auth* {
 		# trace
