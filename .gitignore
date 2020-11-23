@@ -4,3 +4,14 @@ lib
 *.log
 *-app/*
 !*-app/package.json
+
+# Ignore Gradle project-specific cache directory
+.gradle/
+.settings/
+.project
+.classpath
+
+# Ignore Gradle build output directory
+build/
+bin/
+target/

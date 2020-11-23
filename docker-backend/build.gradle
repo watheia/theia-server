@@ -1,0 +1,8 @@
+plugins {
+    id 'dev.watheia.base-conventions'
+}
+
+subprojects.each {
+    tasks.assemble.dependsOn "${it.path}:assemble"
+    tasks.clean.dependsOn "${it.path}:clean"
+}

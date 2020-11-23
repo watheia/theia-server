@@ -1,0 +1,7 @@
+plugins {
+    id 'dev.watheia.docker-conventions'
+}
+
+docker {
+    dockerContainer = dockerContainer = "${containerRegistry}/theia-server:${project.name}"
+}

@@ -1,0 +1,22 @@
+plugins {
+    id 'dev.watheia.node-conventions'
+    id 'dev.watheia.docker-conventions'
+}
+
+docker {
+    copySpec.from(projectDir) {
+        include 'lerna.json'
+        include 'package.json'
+        include 'yarn.lock'
+        include 'browser-app/package.json'
+        include 'runtime-workspace/**'
+        include 'theia-auth-extension/package.json'
+        include 'theia-auth-extension/package.json'
+        include 'theia-auth-extension/tsconfig.json'
+        include 'theia-auth-extension/src/**'
+    }
+}
+
+assemble {
+    dependsOn ':theia-server:docker-backend:assemble'
+}
