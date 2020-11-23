@@ -17,6 +17,4 @@ docker {
     }
 }
 
-assemble {
-    dependsOn ':theia-server:docker-backend:assemble'
-}
+tasks.docker.dependsOn ':theia-server:docker-backend:assemble'

@@ -5,3 +5,5 @@ plugins {
 docker {
     dockerContainer = dockerContainer = "${containerRegistry}/theia-server:${project.name}"
 }
+
+tasks.docker.dependsOn ':theia-server:docker-backend:common:docker'
